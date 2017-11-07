@@ -19,6 +19,8 @@ namespace ForceLineFeedCode
             C_CPP,
             [Description("CSharp")]
             CSharp,
+            [Description("Others")]
+            Others,
         };
 
         //public enum TypeEncoding
@@ -35,7 +37,7 @@ namespace ForceLineFeedCode
         //    UTF_8=65001,
         //};
 
-        private TypeLineFeed[] lineFeeds_ = new TypeLineFeed[2] { TypeLineFeed.LF, TypeLineFeed.LF };
+        private TypeLineFeed[] lineFeeds_ = new TypeLineFeed[3] { TypeLineFeed.LF, TypeLineFeed.LF, TypeLineFeed.LF};
         //[Category("General")]
         //[DisplayName("Line Feed")]
         //[Description("Line Feed")]
@@ -60,6 +62,15 @@ namespace ForceLineFeedCode
         {
             get { return lineFeeds_[(int)TypeLanguage.CSharp]; }
             set { lineFeeds_[(int)TypeLanguage.CSharp] = value; }
+        }
+
+        [Category("General")]
+        [DisplayName("Others")]
+        [Description("Line feed for Others")]
+        public TypeLineFeed LineFeedOthers
+        {
+            get { return lineFeeds_[(int)TypeLanguage.Others]; }
+            set { lineFeeds_[(int)TypeLanguage.Others] = value; }
         }
     }
 }

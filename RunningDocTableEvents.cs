@@ -147,7 +147,6 @@ namespace ForceLineFeedCode
 
         public int OnBeforeSave(uint docCookie)
         {
-            //Output("OnBeforeSave\n");
             RunningDocumentInfo runningDocumentInfo = package_.RDT.GetDocumentInfo(docCookie);
             EnvDTE.Document document = package_.DTE.Documents.OfType<EnvDTE.Document>().SingleOrDefault(x => x.FullName == runningDocumentInfo.Moniker);
             if(null == document) {
@@ -156,7 +155,9 @@ namespace ForceLineFeedCode
             if(document.Kind != "{8E7B96A8-E33D-11D0-A6D5-00C04FB67F6A}") {
                 return VSConstants.S_OK;
             }
+#if DEBUG
             Output(document.Language + "\n");
+#endif
             EnvDTE.TextDocument textDocument = document.Object("TextDocument") as EnvDTE.TextDocument;
             if(null == textDocument) {
                 return VSConstants.S_OK;
@@ -174,10 +175,14 @@ namespace ForceLineFeedCode
                     linefeed = optionPage.LineFeedCSharp;
                     break;
                 default:
-                    return VSConstants.S_OK;
+                    linefeed = optionPage.LineFeedOthers;
+                    break;
                 }
             }
 
+#if DEBUG
+            Output(string.Format("Language {0}\n", document.Language));
+#endif
             string replaceLineFeed;
             switch(linefeed){
             case OptionPageForceLineFeedCode.TypeLineFeed.LF:
@@ -243,7 +248,9 @@ namespace ForceLineFeedCode
                     editPoint.CharRight();
                 }
             }
-            //Output(string.Format("Replace {0} EOLs\n", count));
+#if DEBUG
+            Output(string.Format("Replace {0} EOLs\n", count));
+#endif
             return VSConstants.S_OK;
         }
     }
