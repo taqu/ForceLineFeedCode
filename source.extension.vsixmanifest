@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="fbf9519c-d95e-4353-8195-dfcfbd985b9e" Version="1.02" Language="en-US" Publisher="t-sakai" />
+        <Identity Id="fbf9519c-d95e-4353-8195-dfcfbd985b9e" Version="1.03" Language="en-US" Publisher="t-sakai" />
         <DisplayName>ForceLineFeedCode</DisplayName>
         <Description xml:space="preserve">Force saving texts with any line endings.</Description>
         <License>LICENSE.txt</License>
