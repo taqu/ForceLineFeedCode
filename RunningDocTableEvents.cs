@@ -13,6 +13,7 @@ namespace ForceLineFeedCode
 
         private void Output(string message)
         {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             EnvDTE.OutputWindow outputWindow = package_.DTE.ToolWindows.OutputWindow;
             if(null == outputWindow) {
                 return;
@@ -147,8 +148,17 @@ namespace ForceLineFeedCode
 
         public int OnBeforeSave(uint docCookie)
         {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             RunningDocumentInfo runningDocumentInfo = package_.RDT.GetDocumentInfo(docCookie);
-            EnvDTE.Document document = package_.DTE.Documents.OfType<EnvDTE.Document>().SingleOrDefault(x => x.FullName == runningDocumentInfo.Moniker);
+            EnvDTE.Document document = null;
+            foreach(EnvDTE.Document doc in package_.DTE.Documents.OfType<EnvDTE.Document>())
+            {
+                if(doc.FullName == runningDocumentInfo.Moniker)
+                {
+                    document = doc;
+                    break;
+                }
+            }
             if(null == document) {
                 return VSConstants.S_OK;
             }
@@ -169,7 +179,7 @@ namespace ForceLineFeedCode
                 switch (document.Language)
                 {
                 case "C/C++":
-                    linefeed = optionPage.LineFeedCPP;
+                    linefeed = optionPage.LineFeedCpp;
                     break;
                 case "CSharp":
                     linefeed = optionPage.LineFeedCSharp;

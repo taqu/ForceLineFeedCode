@@ -16,7 +16,7 @@ namespace ForceLineFeedCode
         public enum TypeLanguage
         {
             [Description("C/C++")]
-            C_CPP,
+            C_Cpp,
             [Description("CSharp")]
             CSharp,
             [Description("Others")]
@@ -49,10 +49,10 @@ namespace ForceLineFeedCode
         [Category("General")]
         [DisplayName("C/C++")]
         [Description("Line feed for C/C++")]
-        public TypeLineFeed LineFeedCPP
+        public TypeLineFeed LineFeedCpp
         {
-            get { return lineFeeds_[(int)TypeLanguage.C_CPP]; }
-            set { lineFeeds_[(int)TypeLanguage.C_CPP] = value; }
+            get { return lineFeeds_[(int)TypeLanguage.C_Cpp]; }
+            set { lineFeeds_[(int)TypeLanguage.C_Cpp] = value; }
         }
 
         [Category("General")]
