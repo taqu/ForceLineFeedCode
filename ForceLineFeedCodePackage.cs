@@ -46,11 +46,26 @@ namespace ForceLineFeedCode
             }
         }
 
+        public string SolutionDirectory
+        {
+            get { return solutionDirectory_;}
+        }
+
+        public OptionPageForceLineFeedCode.FileSettings loadFileSettings()
+        {
+#if DEBUG
+            return fileSettings_.load(solutionDirectory_, this) ? fileSettings_ : null;
+#else
+            return fileSettings_.load(solutionDirectory_)? fileSettings_ : null;
+#endif
+        }
 
         private EnvDTE80.DTE2 dte2_;
         private RunningDocumentTable runningDocumentTable_;
         private Microsoft.VisualStudio.OLE.Interop.IServiceProvider servicePorvider_;
         private RunningDocTableEvents runningDocTableEvents_;
+        private string solutionDirectory_;
+        private OptionPageForceLineFeedCode.FileSettings fileSettings_ = new OptionPageForceLineFeedCode.FileSettings();
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -68,6 +83,7 @@ namespace ForceLineFeedCode
             servicePorvider_ = Package.GetGlobalService(typeof(Microsoft.VisualStudio.OLE.Interop.IServiceProvider)) as Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
             runningDocumentTable_ = new RunningDocumentTable(new ServiceProvider(servicePorvider_));
             runningDocTableEvents_ = new RunningDocTableEvents(this);
+            solutionDirectory_ = System.IO.Path.GetDirectoryName(dte2_.Solution.FullName);
         }
 
         #endregion

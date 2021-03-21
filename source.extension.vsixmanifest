@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="fbf9519c-d95e-4353-8195-dfcfbd985b9e" Version="1.07" Language="en-US" Publisher="t-sakai" />
+        <Identity Id="fbf9519c-d95e-4353-8195-dfcfbd985b9e" Version="1.08" Language="en-US" Publisher="t-sakai" />
         <DisplayName>ForceLineFeedCode</DisplayName>
         <Description xml:space="preserve">Force saving texts with any line endings.</Description>
         <License>LICENSE.txt</License>
@@ -10,15 +10,15 @@
         <Tags>LineFeed</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
-        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
-        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0, 17.0)" />
+        <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
+        <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
     </Dependencies>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
     </Prerequisites>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
