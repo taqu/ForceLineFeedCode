@@ -10,9 +10,19 @@ And, select target codes for each languages (now support for C/C++, CSharp, and 
 - Line Feed code for each languages
     - Now supports, C/C++, C#, or others
 - Load setting file
-    - Load a setting file just in the solution directory
+    - Load a setting file, just the name "_forcelinefeedcode.xml", just in the solution directory
 
 # Setting File
+A example setting file is below,
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<General>
+    <Code lang="C/C++">LF</Code>
+    <Code lang="CSharp">LF</Code>
+    <Code lang="Others">LF</Code>
+</General>
+```
 
 # License
 Public domain
