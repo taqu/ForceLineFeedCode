@@ -10,7 +10,9 @@ namespace ForceLineFeedCode
     internal class RunningDocTableEvents : IVsRunningDocTableEvents3
     {
         private ForceLineFeedCodePackage package_;
+        private RunningDocumentTable runningDocumentTable_;
 
+#if DEBUG
         private void Output(string message)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
@@ -25,15 +27,16 @@ namespace ForceLineFeedCode
 
         private void OutputLine(string message)
         {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             Output(message + "\n");
         }
+#endif
 
         public RunningDocTableEvents(ForceLineFeedCodePackage package)
         {
             package_ = package;
-            if(null != package_.RDT) {
-                package_.RDT.Advise(this);
-            }
+            runningDocumentTable_ = new RunningDocumentTable(package);
+            runningDocumentTable_.Advise(this);
         }
 
         public int OnAfterAttributeChange(uint docCookie, uint grfAttribs)
@@ -54,83 +57,6 @@ namespace ForceLineFeedCode
 
         public int OnAfterSave(uint docCookie)
         {
-#if false
-            OutputLine("OnAfterSave");
-            RunningDocumentInfo runningDocumentInfo = package_.RDT.GetDocumentInfo(docCookie);
-            EnvDTE.Document document = package_.DTE.Documents.OfType<EnvDTE.Document>().SingleOrDefault(x => x.FullName == runningDocumentInfo.Moniker);
-            if(null == document) {
-                return VSConstants.S_OK;
-            }
-            if(document.Kind != "{8E7B96A8-E33D-11D0-A6D5-00C04FB67F6A}") {
-                return VSConstants.S_OK;
-            }
-
-            OptionPageForceEnc optionPage = package_.Options;
-            OptionPageForceEnc.TypeEncoding typeEncoding = OptionPageForceEnc.TypeEncoding.UTF_8;
-            bool bom = true;
-            if(null != optionPage){
-                typeEncoding = optionPage.Encoding;
-                bom = optionPage.BOM;
-            }
-
-            System.IO.FileStream stream = new System.IO.FileStream(document.FullName, System.IO.FileMode.Open);
-            {
-                System.Text.Encoding encoding;
-                System.Text.Encoding writeEncoding;
-                switch(typeEncoding) {
-                case OptionPageForceEnc.TypeEncoding.UTF_16LE:
-                    encoding = new System.Text.UnicodeEncoding(false, bom, true);
-                    writeEncoding = new System.Text.UnicodeEncoding(false, bom);
-                    break;
-                case OptionPageForceEnc.TypeEncoding.UTF_16BE:
-                    encoding = new System.Text.UnicodeEncoding(true, bom, true);
-                    writeEncoding = new System.Text.UnicodeEncoding(true, bom);
-                    break;
-                case OptionPageForceEnc.TypeEncoding.UTF_32LE:
-                    encoding = new System.Text.UTF32Encoding(false, bom, true);
-                    writeEncoding = new System.Text.UTF32Encoding(false, bom);
-                    break;
-                case OptionPageForceEnc.TypeEncoding.UTF_32BE:
-                    encoding = new System.Text.UTF32Encoding(true, bom, true);
-                    writeEncoding = new System.Text.UTF32Encoding(true, bom);
-                    break;
-                case OptionPageForceEnc.TypeEncoding.UTF_8:
-                    encoding = new System.Text.UTF8Encoding(bom, true);
-                    writeEncoding = new System.Text.UTF8Encoding(bom);
-                    break;
-                default:
-                    encoding = writeEncoding = System.Text.Encoding.GetEncoding((int)typeEncoding);
-                    break;
-                }
-
-                try {
-                    stream.Position = 0;
-                    System.IO.StreamReader reader = new System.IO.StreamReader(stream, encoding);
-                    while(!reader.EndOfStream) {
-                        reader.Read();
-                    }
-                    stream.Close();
-                    return VSConstants.S_OK;
-
-                } catch(System.Text.DecoderFallbackException) {
-
-                } catch {
-                    stream.Close();
-                    return VSConstants.S_OK;
-                }
-
-                OutputLine("Change Encoding");
-                try {
-                    stream.Position = 0;
-                    System.IO.StreamReader reader = new System.IO.StreamReader(stream, System.Text.Encoding.Default);
-                    string text = reader.ReadToEnd();
-                    System.IO.File.WriteAllText(document.FullName, text, writeEncoding);
-
-                } catch {
-                }
-                stream.Close();
-            }
-#endif
             return VSConstants.S_OK;
         }
 
@@ -152,21 +78,13 @@ namespace ForceLineFeedCode
 
         private void loadSettings(out OptionPageForceLineFeedCode.TypeLineFeed linefeed, OptionPageForceLineFeedCode.TypeLanguage language)
         {
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             linefeed = OptionPageForceLineFeedCode.TypeLineFeed.LF;
 
             if (package_.Options.LoadSettingFile) {
-#if DEBUG
-                OutputLine(package_.SolutionDirectory);
-#endif
-                OptionPageForceLineFeedCode.FileSettings fileSettings = package_.loadFileSettings();
-                if(null != fileSettings) {
-#if DEBUG
-                    OutputLine(fileSettings.lastWriteTime_.ToShortDateString());
-                    OutputLine(fileSettings.lineFeeds_[0].ToString());
-                    OutputLine(fileSettings.lineFeeds_[1].ToString());
-                    OutputLine(fileSettings.lineFeeds_[2].ToString());
-#endif
-                    linefeed = fileSettings.lineFeeds_[(int)language];
+                SettingFile settingFile = package_.loadFileSettings();
+                if(null != settingFile) {
+                    linefeed = settingFile.get(language);
                     return;
                 }
             }
@@ -185,13 +103,14 @@ namespace ForceLineFeedCode
                 }
             }
         }
+
         public int OnBeforeSave(uint docCookie)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
 #if DEBUG
             OutputLine(string.Format("Load _forcelinefeedcode.xml: {0}", package_.Options.LoadSettingFile));
 #endif
-            RunningDocumentInfo runningDocumentInfo = package_.RDT.GetDocumentInfo(docCookie);
+            RunningDocumentInfo runningDocumentInfo = runningDocumentTable_.GetDocumentInfo(docCookie);
             EnvDTE.Document document = null;
             foreach(EnvDTE.Document doc in package_.DTE.Documents.OfType<EnvDTE.Document>())
             {

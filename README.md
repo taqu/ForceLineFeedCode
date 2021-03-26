@@ -10,7 +10,7 @@ And, select target codes for each languages (now support for C/C++, CSharp, and 
 - Line Feed code for each languages
     - Now supports, C/C++, C#, or others
 - Load setting file
-    - Load a setting file, just the name "_forcelinefeedcode.xml", just in the solution directory
+    - Load a setting file, just the name "_forcelinefeedcode.xml". Search the setting file from the solution directory up to a directory which includes ".git" or ".svn".
 
 # Setting File
 An example setting file is below,
@@ -28,8 +28,11 @@ An example setting file is below,
 Public domain
 
 # Release History
-v1.4  
-Add a option to load a config file in the solution directory.  
+v1.8  
+Add a option to load a setting file.  
+v1.7  
+Up .Net Framework to 4.7.2    
+Fix using deprecated APIs.  
 v1.3  
 Rebuild with VS 2019 to fix a error about deprecation.  
 v1.2  

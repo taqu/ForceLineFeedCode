@@ -36,7 +36,7 @@ namespace ForceLineFeedCode
         #region Package Members
 
         public EnvDTE80.DTE2 DTE { get { return dte2_; } }
-        public RunningDocumentTable RDT { get { return runningDocumentTable_; } }
+        public SVsRunningDocumentTable RDT { get { return runningDocumentTable_; } }
 
         public OptionPageForceLineFeedCode Options
         {
@@ -46,26 +46,17 @@ namespace ForceLineFeedCode
             }
         }
 
-        public string SolutionDirectory
+        public SettingFile loadFileSettings()
         {
-            get { return solutionDirectory_;}
-        }
-
-        public OptionPageForceLineFeedCode.FileSettings loadFileSettings()
-        {
-#if DEBUG
-            return fileSettings_.load(solutionDirectory_, this) ? fileSettings_ : null;
-#else
-            return fileSettings_.load(solutionDirectory_)? fileSettings_ : null;
-#endif
+            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+            return fileSettings_.load(DTE) ? fileSettings_ : null;
         }
 
         private EnvDTE80.DTE2 dte2_;
-        private RunningDocumentTable runningDocumentTable_;
+        private SVsRunningDocumentTable runningDocumentTable_;
         private Microsoft.VisualStudio.OLE.Interop.IServiceProvider servicePorvider_;
         private RunningDocTableEvents runningDocTableEvents_;
-        private string solutionDirectory_;
-        private OptionPageForceLineFeedCode.FileSettings fileSettings_ = new OptionPageForceLineFeedCode.FileSettings();
+        private SettingFile fileSettings_ = new SettingFile();
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -76,14 +67,17 @@ namespace ForceLineFeedCode
         /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            await base.InitializeAsync(cancellationToken, progress);
+
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
             dte2_ = await GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;
-            servicePorvider_ = Package.GetGlobalService(typeof(Microsoft.VisualStudio.OLE.Interop.IServiceProvider)) as Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
-            runningDocumentTable_ = new RunningDocumentTable(new ServiceProvider(servicePorvider_));
+            servicePorvider_ = await GetServiceAsync(typeof(Microsoft.VisualStudio.OLE.Interop.IServiceProvider)) as Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
+
+            runningDocumentTable_ = await GetServiceAsync(typeof(SVsRunningDocumentTable)) as SVsRunningDocumentTable;
             runningDocTableEvents_ = new RunningDocTableEvents(this);
-            solutionDirectory_ = System.IO.Path.GetDirectoryName(dte2_.Solution.FullName);
         }
 
         #endregion
