@@ -13,7 +13,7 @@ And, select target codes for each languages (now support for C/C++, CSharp, and 
     - Load a setting file, just the name "_forcelinefeedcode.xml". Search the setting file from the solution directory up to a directory which includes ".git" or ".svn".
 
 # Setting File
-An example setting file is below,
+An example setting file "_forcelinefeedcode.xml" is below,
 
 ```
 <?xml version="1.0" encoding="utf-8"?>
