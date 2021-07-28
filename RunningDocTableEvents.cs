@@ -12,11 +12,14 @@ namespace ForceLineFeedCode
         private ForceLineFeedCodePackage package_;
         private RunningDocumentTable runningDocumentTable_;
 
-#if DEBUG
-        private void Output(string message)
+        /**
+        @brief Print a message to the editor's output
+        */
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void output(string message, EnvDTE80.DTE2 dte)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            EnvDTE.OutputWindow outputWindow = package_.DTE.ToolWindows.OutputWindow;
+            EnvDTE.OutputWindow outputWindow = dte.ToolWindows.OutputWindow;
             if(null == outputWindow) {
                 return;
             }
@@ -24,13 +27,6 @@ namespace ForceLineFeedCode
                 window.OutputString(message);
             }
         }
-
-        private void OutputLine(string message)
-        {
-            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            Output(message + "\n");
-        }
-#endif
 
         public RunningDocTableEvents(ForceLineFeedCodePackage package)
         {
@@ -76,18 +72,23 @@ namespace ForceLineFeedCode
             return VSConstants.S_OK;
         }
 
-        private void loadSettings(out OptionPageForceLineFeedCode.TypeLineFeed linefeed, OptionPageForceLineFeedCode.TypeLanguage language)
+        /**
+        @brief Load a setting for the language
+        */
+        private void loadSettings(out OptionPageForceLineFeedCode.TypeLineFeed linefeed, OptionPageForceLineFeedCode.TypeLanguage language, string documentPath)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             linefeed = OptionPageForceLineFeedCode.TypeLineFeed.LF;
 
+            //Load from a file
             if (package_.Options.LoadSettingFile) {
-                SettingFile settingFile = package_.loadFileSettings();
+                SettingFile settingFile = package_.loadFileSettings(documentPath);
                 if(null != settingFile) {
                     linefeed = settingFile.get(language);
                     return;
                 }
             }
+            //Otherwise, load from the option page
             OptionPageForceLineFeedCode optionPage = package_.Options;
             if (null != optionPage) {
                 switch (language) {
@@ -107,9 +108,9 @@ namespace ForceLineFeedCode
         public int OnBeforeSave(uint docCookie)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-#if DEBUG
-            OutputLine(string.Format("Load _forcelinefeedcode.xml: {0}", package_.Options.LoadSettingFile));
-#endif
+            output(string.Format("Load _forcelinefeedcode.xml: {0}\n", package_.Options.LoadSettingFile), package_.DTE);
+
+            //Get the current document
             RunningDocumentInfo runningDocumentInfo = runningDocumentTable_.GetDocumentInfo(docCookie);
             EnvDTE.Document document = null;
             foreach(EnvDTE.Document doc in package_.DTE.Documents.OfType<EnvDTE.Document>())
@@ -126,15 +127,12 @@ namespace ForceLineFeedCode
             if(document.Kind != "{8E7B96A8-E33D-11D0-A6D5-00C04FB67F6A}") {
                 return VSConstants.S_OK;
             }
-#if DEBUG
-            OutputLine(document.Language);
-#endif
             EnvDTE.TextDocument textDocument = document.Object("TextDocument") as EnvDTE.TextDocument;
             if(null == textDocument) {
                 return VSConstants.S_OK;
             }
 
-
+            //Get the current language
             OptionPageForceLineFeedCode.TypeLanguage language = OptionPageForceLineFeedCode.TypeLanguage.Others;
             switch (document.Language) {
             case "C/C++":
@@ -148,11 +146,11 @@ namespace ForceLineFeedCode
                 break;
             }
 
+            //Specify a target line-feed code
             OptionPageForceLineFeedCode.TypeLineFeed linefeed = OptionPageForceLineFeedCode.TypeLineFeed.LF;
-            loadSettings(out linefeed, language);
-#if DEBUG
-            OutputLine(string.Format("Language {0}", language));
-#endif
+            loadSettings(out linefeed, language, document.Path);
+
+            output(string.Format("doc:{0} => lang:{1} code:{2}\n", document.Language, language, linefeed), package_.DTE);
             string replaceLineFeed;
             switch(linefeed){
             case OptionPageForceLineFeedCode.TypeLineFeed.LF:
@@ -167,6 +165,7 @@ namespace ForceLineFeedCode
                 break;
             }
 
+            //Convert different codes
             int count = 0;
             EnvDTE.EditPoint editPoint = textDocument.StartPoint.CreateEditPoint();
             if(OptionPageForceLineFeedCode.TypeLineFeed.CRLF == linefeed) {
@@ -218,9 +217,7 @@ namespace ForceLineFeedCode
                     editPoint.CharRight();
                 }
             }
-#if DEBUG
-            OutputLine(string.Format("Replace {0} EOLs", count));
-#endif
+            output(string.Format("Replace {0} EOLs\n", count), package_.DTE);
             return VSConstants.S_OK;
         }
     }

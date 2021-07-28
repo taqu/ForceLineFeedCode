@@ -9,55 +9,34 @@ namespace ForceLineFeedCode
     public class SettingFile
     {
         public const string FileName = "_forcelinefeedcode.xml";
-#if DEBUG
-        private void output(string message, EnvDTE80.DTE2 dte)
-        {
-            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            EnvDTE.OutputWindow outputWindow = dte.ToolWindows.OutputWindow;
-            if (null == outputWindow) {
-                return;
-            }
-            foreach (EnvDTE.OutputWindowPane window in outputWindow.OutputWindowPanes) {
-                window.OutputString(message);
-            }
-        }
-#endif
 
         public OptionPageForceLineFeedCode.TypeLineFeed get(OptionPageForceLineFeedCode.TypeLanguage language)
         {
             return lineFeeds_[(int)language];
         }
 
-        public bool load(EnvDTE80.DTE2 dte)
+        public bool load(EnvDTE80.DTE2 dte, string documentPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (string.IsNullOrEmpty(filepath_)) {
+            string directoryPath = System.IO.Path.GetDirectoryName(documentPath);
+            if (string.IsNullOrEmpty(directoryPath) || !System.IO.Directory.Exists(directoryPath)) {
+                return false;
+            }
+            string filepath = string.Empty;
+            if (!directoryToFile_.TryGetValue(directoryPath, out filepath) || !System.IO.File.Exists(filepath)) {
                 if (null == dte) {
                     return false;
                 }
-                if (null == dte.Solution) {
+                RunningDocTableEvents.output(string.Format("search from {0}\n", directoryPath), dte);
+                filepath = findFile(directoryPath);
+                if(string.IsNullOrEmpty(filepath) || !System.IO.File.Exists(filepath)) {
                     return false;
                 }
-                string solution = System.IO.Path.GetDirectoryName(dte.Solution.FullName);
-                if (string.IsNullOrEmpty(solution)) {
-                    return false;
-                }
-                filepath_ = findFile(solution);
-                if(null == filepath_) {
-                    return false;
-                }
+                addToCache(directoryPath, filepath);
             }
 
-            if (!System.IO.File.Exists(filepath_)) {
-#if DEBUG
-                output("Cannot find " + filepath_ + "\n", dte);
-#endif
-                return false;
-            }
-            DateTime lastWriteTime = System.IO.File.GetLastWriteTime(filepath_);
-#if DEBUG
-            output(string.Format("Last write time {0}<={1}\n", lastWriteTime, lastWriteTime_), dte);
-#endif
+            DateTime lastWriteTime = System.IO.File.GetLastWriteTime(filepath);
+            RunningDocTableEvents.output(string.Format("{0}: last write time {1}<={2}\n", filepath, lastWriteTime, lastWriteTime_), dte);
             if (lastWriteTime <= lastWriteTime_) {
                 return true;
             }
@@ -68,15 +47,13 @@ namespace ForceLineFeedCode
             try {
                 TypeLineFeed[] lineFeeds = new TypeLineFeed[NumLanguages] { TypeLineFeed.LF, TypeLineFeed.LF, TypeLineFeed.LF };
 
-                using (XmlReader reader = XmlReader.Create(filepath_, settings)) {
+                using (XmlReader reader = XmlReader.Create(filepath, settings)) {
                     reader.ReadStartElement("General");
                     while (reader.Read()) {
                         if (!reader.IsStartElement() || "Code" != reader.Name) {
                             continue;
                         }
-#if DEBUG
-                        output("Read Code\n", dte);
-#endif
+                        RunningDocTableEvents.output("Read Code\n", dte);
                         if (!reader.HasAttributes) {
                             continue;
                         }
@@ -85,9 +62,7 @@ namespace ForceLineFeedCode
                             continue;
                         }
                         lang = lang.Trim();
-#if DEBUG
-                        output("  Language " + lang + "\n", dte);
-#endif
+                        RunningDocTableEvents.output("  Language " + lang + "\n", dte);
                         TypeLanguage typeLanguage = TypeLanguage.C_Cpp;
                         switch (lang) {
                         case "C/C++":
@@ -103,9 +78,7 @@ namespace ForceLineFeedCode
                             continue;
                         }
                         string code = reader.ReadString().Trim();
-#if DEBUG
-                        output("  code " + code + "\n", dte);
-#endif
+                        RunningDocTableEvents.output("  code " + code + "\n", dte);
                         TypeLineFeed typeLineFeed = TypeLineFeed.LF;
                         switch (code) {
                         case "LF":
@@ -127,8 +100,11 @@ namespace ForceLineFeedCode
                 lineFeeds_ = lineFeeds;
                 lastWriteTime_ = lastWriteTime;
 #if DEBUG
+                for(int i=0; i< NumLanguages; ++i) {
+                    RunningDocTableEvents.output(string.Format(" lang:{0} code:{1}\n", (TypeLanguage)i, lineFeeds_[i]), dte);
+                }
             } catch (Exception exception) {
-                output(exception.ToString() + "\n", dte);
+                RunningDocTableEvents.output(exception.ToString() + "\n", dte);
 #else
             } catch {
 #endif
@@ -161,10 +137,37 @@ namespace ForceLineFeedCode
             return findFile(parent.FullName);
         }
 
+        private void addToCache(string directory, string file)
+        {
+            if (directoryToFile_.ContainsKey(directory)) {
+                directoryToFile_.Remove(directory);
+            }
+            if (MaxCaches <= directoryToFile_.Count) {
+                System.Random random = new Random();
+                for(int i=0; i<64; ++i) {
+                    removeFromCache(random.Next() % directoryToFile_.Count);
+                }
+            }
+            directoryToFile_.Add(directory, file);
+        }
+
+        private void removeFromCache(int index)
+        {
+            int count = 0;
+            foreach (string key in directoryToFile_.Keys) {
+                if(count == index) {
+                    directoryToFile_.Remove(key);
+                    return;
+                }
+                ++count;
+            }
+        }
+
         private static readonly string[] RootDirectories = new string[] {".git", ".svn"};
+        private const int MaxCaches = 256;
 
         private TypeLineFeed[] lineFeeds_ = new TypeLineFeed[NumLanguages] { TypeLineFeed.LF, TypeLineFeed.LF, TypeLineFeed.LF };
-        private string filepath_;
+        private System.Collections.Generic.Dictionary<string, string> directoryToFile_ = new System.Collections.Generic.Dictionary<string, string>(MaxCaches);
         private DateTime lastWriteTime_ = new DateTime();
     }
 }

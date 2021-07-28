@@ -46,10 +46,10 @@ namespace ForceLineFeedCode
             }
         }
 
-        public SettingFile loadFileSettings()
+        public SettingFile loadFileSettings(string documentPath)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            return fileSettings_.load(DTE) ? fileSettings_ : null;
+            return fileSettings_.load(DTE, documentPath) ? fileSettings_ : null;
         }
 
         private EnvDTE80.DTE2 dte2_;
