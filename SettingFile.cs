@@ -49,7 +49,7 @@ namespace ForceLineFeedCode
 
                 using (XmlReader reader = XmlReader.Create(filepath, settings)) {
                     reader.ReadStartElement("General");
-                    while (reader.Read()) {
+                    do {
                         if (!reader.IsStartElement() || "Code" != reader.Name) {
                             continue;
                         }
@@ -95,7 +95,7 @@ namespace ForceLineFeedCode
                         }
 
                         lineFeeds[(int)typeLanguage] = typeLineFeed;
-                    }
+                    }while(reader.Read());
                 } //using (XmlReader reader
                 lineFeeds_ = lineFeeds;
                 lastWriteTime_ = lastWriteTime;
