@@ -13,6 +13,11 @@ And, select target codes for each languages (now support for C/C++, CSharp, and 
     - Load a setting file, just the name "_forcelinefeedcode.xml". Search the setting file from the solution directory up to a directory which includes ".git" or ".svn".
 
 # Setting File
+Try to find a setting file,
+1. From the directory of the focused file
+2. Search **_forcelinefeedcode.xml**
+3. If the current directory don't have ".git" or ".svn", move to upper directory and repeat from 2.
+
 An example setting file "_forcelinefeedcode.xml" is below,
 
 ```
@@ -28,6 +33,9 @@ An example setting file "_forcelinefeedcode.xml" is below,
 Public domain
 
 # Release History
+v1.9  
+Fix don't parse the first entry of a setting file.  
+Change to search a setting file from the directory of the focused file.  
 v1.8  
 Add a option to load a setting file.  
 v1.7  
