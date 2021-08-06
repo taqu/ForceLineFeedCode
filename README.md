@@ -10,7 +10,7 @@ And, select target codes for each languages (now support for C/C++, CSharp, and 
 - Line Feed code for each languages
     - Now supports, C/C++, C#, or others
 - Load setting file
-    - Load a setting file, just the name "_forcelinefeedcode.xml". Search the setting file from the solution directory up to a directory which includes ".git" or ".svn".
+    - Load a setting file, just the name "_forcelinefeedcode.xml". Search a setting file from the directory which includes the focused file up to a directory which includes ".git" or ".svn".
 
 # Setting File
 Try to find a setting file,
