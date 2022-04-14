@@ -1,13 +1,15 @@
 ﻿<?xml version="1.0" ?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ForceLineFeedCode.06a2e1a5-e82f-4780-8f09-0af1a4630a8a" Version="1.0" Language="en-US" Publisher="阪井拓郎" />
+        <Identity Id="ForceLineFeedCode.06a2e1a5-e82f-4780-8f09-0af1a4630a8a" Version="1.0" Language="en-US" Publisher="Takuro Sakai" />
         <DisplayName>ForceLineFeedCode</DisplayName>
         <Description xml:space="preserve">Force saving texts with any line endings.</Description>
+        <MoreInfo>https://github.com/taqu/ForceLineFeedCode</MoreInfo>
         <License>LICENSE.txt</License>
+        <ReleaseNotes>RELEASE.txt</ReleaseNotes>
         <Icon>Package.ico</Icon>
         <PreviewImage>Package.ico</PreviewImage>
-        <Tags>LineFeed</Tags>
+        <Tags>Line endings, Line feeds</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
